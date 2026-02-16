@@ -1,5 +1,3 @@
----
-
 # 🏛️ dump
 
 *Zbiór genialnych rozwiązań, których dokończenie byłoby obrazą dla mojej wolności osobistej.*
