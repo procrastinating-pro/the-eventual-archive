@@ -1,6 +1,8 @@
 <img src="image.png" alt="Wolnego neta mosz synek!" width="100%">
 # 🏛️ dump
 
+<details>
+  <summary><b>🇵🇱 Kliknij, aby rozwinąć manifest po polsku</b></summary>
 *Zbiór genialnych rozwiązań, których dokończenie byłoby obrazą dla mojej wolności osobistej.*
 
 To nie jest zwykłe repozytorium. To archiwum mojej wyższości nad problemami, które uznałem za zbyt proste, by poświęcać im więcej niż 15 minut. Jako **procrastinating-pro**, brzydzę się kończeniem projektów – prawdziwa sztuka to ich perfekcyjne zaplanowanie i natychmiastowe porzucenie na rzecz czegoś trudniejszego.
@@ -34,3 +36,4 @@ O: Kiedy nuda przeważy nad poczuciem winy. Czyli nie dzisiaj.
 > "Gdybym naprawdę chciał, to bym to skończył w godzinę. Ale fakt, że tego nie robię, czyni mnie intrygującym."
 
 ---
+</details>
