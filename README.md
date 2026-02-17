@@ -61,8 +61,7 @@ This is no ordinary repository. This is an archive of my intellectual superiorit
 
 * **Revolutionary Algorithms:** Aborted mid-way because I had a better idea.
 * **`main.py` Files:** Containing nothing but imports of libraries I intended to dominate.
-* 
-**Optimizations:** Saving 0.0001s of execution time at the cost of 4 days of my life.
+* **Optimizations:** Saving 0.0001s of execution time at the cost of 4 days of my life.
 
 
 
