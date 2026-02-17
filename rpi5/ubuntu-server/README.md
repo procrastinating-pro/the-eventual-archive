@@ -1,103 +1,103 @@
-# 📂 Project NodeOne: Secure Home Operations Center
+# 📂 Project NodeOne: Secure Data Science & Ops Center
 
-**Status:** Phase 1 (Core Network Stack) – Completed 🟢
-**Version:** 1.0 Stable
-**Architecture:** Docker Sidecar + Tailscale Mesh
+**Status:** Phase 2 (Analytics & IDS) – **Active** 🟢
+**Version:** 2.1 (Data Lake Edition)
+**Architecture:** Hybrid (Docker Sidecar + Bare Metal IDS)
 
-## 1. Project Goal
+## 1. Project Overview
 
-Building an uncompromising private home server ("Home Lab") with a strict focus on **Security First** and **Privacy**.
-The project moves away from standard "expose everything" configurations in favor of a **Zero Trust** architecture – no open ports on the edge router, access exclusively via an encrypted VPN tunnel, and strict process isolation.
+NodeOne is a highly hardened, private home server designed with a **Zero Trust** philosophy. Unlike typical home labs, it exposes **zero ports** to the public internet. All access is mediated through an encrypted Mesh VPN.
+The system now serves a dual purpose:
 
-## 2. Hardware Infrastructure
+1. **Operations:** Network-wide AdBlocking and Password Management.
+2. **Security Analytics:** Real-time Intrusion Detection (IDS) with a native RStudio environment for log analysis and threat hunting.
 
-* **Platform:** Raspberry Pi 5 (8GB RAM).
-* **Storage:** NVMe SSD (via PCIe HAT) – for maximum I/O performance.
-* **Network:** Ethernet 1Gbps (Hardwired).
+## 2. Infrastructure
 
-## 3. Security Foundation (Hardening)
+* **Hardware:** Raspberry Pi 5 (8GB RAM) + NVMe SSD (PCIe).
+* **Network Interface:** Gigabit Ethernet (Hardwired).
+* **IP Configuration:** Static IP (via Netplan) to ensure stable DNS serving for the LAN.
+* **OS:** Ubuntu Server (Headless).
 
-This is not a standard Docker setup. Advanced protection mechanisms have been implemented:
+## 3. Security Architecture (The "Fortress")
 
-1. **Docker User Namespace Remapping (`userns-remap`):**
-* **Mechanism:** Processes inside containers run as `root` only *within* the container scope. On the host system, they are mapped to a high-UID unprivileged user (UID > 100000).
-* **Benefit:** Even if an attacker achieves a container breakout, they have zero privileges on the host system.
+### A. Network Invisibility (Cloaking)
 
+* **No Port Forwarding:** The router firewall is completely closed. Shodan/Nmap scans from the WAN side show the host as "offline."
+* **VPN Ingress:** Access to services (RStudio, Vaultwarden) is possible *only* via **Tailscale** (WireGuard).
+* **Subnet Routing:** The server acts as a gateway, allowing authorized VPN devices to access the local LAN securely.
 
-2. **Zero Open Ports (WAN):**
-* No Port Forwarding configured on the ISP router.
-* The server remains invisible to external network scanners (Shodan, Nmap).
+### B. System Hardening
 
-
-3. **Tailscale Mesh VPN (WireGuard):**
-* All administrative access and service consumption occur via an encrypted WireGuard tunnel.
-
-
-
-## 4. Network Architecture: "The Sidecar Pattern"
-
-Due to `userns-remap` isolation, the standard Docker `host` network mode is unavailable for containers. The **Sidecar** pattern was implemented, where service containers attach directly to the VPN container's network stack.
-
-* **Parent Container:** `nodeone-tailscale`
-* Handles the network interface, routing, VPN tunneling, and SSL certificate termination.
+* **Docker User Namespace Remapping (`userns-remap`):**
+* Container processes run as `root` inside the container but map to an unprivileged user (UID > 100000) on the host.
+* **Benefit:** Prevents container breakout attacks from compromising the host system.
 
 
-* **Sidecar Containers:** `adguard`, `vaultwarden`
-* Configured with `network_mode: service:tailscale`.
-* They communicate with each other via `localhost`.
-* They share the same IP address within the VPN mesh.
+* **Bare Metal IDS (Suricata):**
+* Running directly on the host (not Docker) to inspect raw network packets on `eth0`.
+* Configured to ignore hardware offloading (GRO/LRO) for accurate inspection.
+* **Output:** Generates EVE JSON logs for machine learning/analytics.
 
 
 
-## 5. Deployed Services (Software Stack)
+## 4. The Software Stack
 
-### 🛡️ A. VPN & Connectivity (Tailscale)
+The system uses a **Sidecar Pattern**. The VPN container (`tailscale`) manages the network stack, and application containers attach to it.
 
-* **Role:** Exit Node (VPN gateway for mobile devices) + Subnet Router (LAN access).
-* **Function:** Enables secure internet access and ad-blocking while away from home (on LTE/Public Wi-Fi).
-* **Configuration:** Hardcoded Subnet Routing (to bypass auto-detection failures).
+### 📊 Data Science & Analytics
 
-### 🛑 B. Network-wide AdBlocking (AdGuard Home)
+* **RStudio Server (Dockerized):**
+* **Role:** Integrated Development Environment (IDE) for data analysis.
+* **Access:** Served via `https://nodeone...:8443` (Tailscale Encrypted).
+* **Data Pipeline:**
+* Mounts Suricata logs (`/var/log/suricata/eve.json`) as **Read-Only**.
+* Mounts AdGuard logs (`querylog.json`) as **Read-Only**.
 
-* **Role:** DNS Server.
-* **Integration:** Acts as the primary DNS for the entire Tailscale mesh (via "Override Local DNS").
-* **Ports:** 53 (DNS), 3000 (Web UI), 8080 (Block Page).
-* **Status:** Blocks trackers and ads on all VPN-connected devices.
 
-### 🔐 C. Password Management (Vaultwarden)
-
-* **Role:** Private, self-hosted Bitwarden instance (Rust implementation).
-* **Security:**
-* **Invisible to LAN:** No open ports (80/443/8081) exposed on the host IP.
-* **Tailscale Serve:** Accessed exclusively via the VPN tunnel.
-* **HTTPS/TLS:** End-to-end encryption with automatic Let's Encrypt certificates (managed by Tailscale), terminated on the localhost interface.
-* **Hardened:** `SIGNUPS_ALLOWED=false` (Registration disabled after admin creation).
+* **Goal:** Statistical analysis of network traffic, threat visualization, and DNS query auditing using R (`dplyr`, `jsonlite`).
 
 
 
-### 🤖 D. Maintenance (Watchtower)
+### 🛡️ Core Services
 
-* **Role:** Automated container updates.
-* **Fix:** Configured with `userns_mode: host` and `DOCKER_API_VERSION=1.44` to bypass permission issues with the Docker socket on modern API versions.
-
-## 6. Troubleshooting Log (Technical Challenges Resolved)
-
-During deployment, several critical conflicts were resolved:
-
-1. **Port 53 Conflict:** Disabled `systemd-resolved` stub listener to allow AdGuard to bind to the DNS port.
-2. **Permission Denied Loops:** Containers entered restart loops due to `userns-remap` file ownership issues.
-* *Fix:* Applied `chmod 777` to specific data directories (safe due to UserNS isolation).
+* **Tailscale (The Backbone):**
+* Acts as the network interface for all containers.
+* Handles SSL termination (Let's Encrypt) via `tailscale serve`.
+* Advertises routes (`--advertise-routes`) to the LAN.
 
 
-3. **Socket Files:** Implemented manual cleanup of `.sock` files before container startup.
-4. **API Version Mismatch:** Forced Watchtower to use a compatible Docker API version via environment variables.
+* **AdGuard Home (DNS):**
+* Network-wide ad and tracker blocking.
+* Serves DNS to the entire local network via the Static IP.
 
-## 7. Roadmap
 
-* **Phase 2:** Deployment of **Suricata IDS** (Intrusion Detection System) on "Bare Metal" to monitor raw network traffic bypassing Docker.
-* **Phase 3:** Monitoring Stack (Dashboard, Logs).
-* **Phase 4:** Databases and Stateful Applications.
+* **Vaultwarden (Secrets):**
+* Self-hosted Bitwarden instance.
+* **Hardened:** Signups disabled (`SIGNUPS_ALLOWED=false`), accessible only via HTTPS over VPN.
+
+
+
+### 🤖 Maintenance
+
+* **Watchtower:**
+* Updates containers automatically.
+* **Config:** Forced `userns_mode: host` and `API 1.44` to bypass permission issues on the hardened Docker daemon.
+
+
+
+## 5. Data Flow (The "Data Lake")
+
+1. **Traffic** hits the `eth0` interface.
+2. **Suricata** (Host) inspects packets → Writes to `eve.json`.
+3. **AdGuard** (Container) filters DNS → Writes to `querylog.json`.
+4. **RStudio** (Container) reads both logs via bind-mounts → User performs analysis.
+
+## 6. Current Roadmap
+
+* **Phase 3:** Active Defense. Implementing `endlessh` (SSH Tarpit) to trap and slow down internal network scanners.
+* **Phase 4:** Long-term metrics storage (InfluxDB or SQLite) for RStudio reporting.
 
 ---
 
-**Signed:** procrastinating-pro
+**Signed:** NodeOne SysAdmin.
