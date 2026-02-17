@@ -18,3 +18,9 @@
 + Tailscale
 + Watchtower
 + Vaultwarden
+
+Typ ataku,Skuteczność przeciwko Twojemu setupowi,Dlaczego?
+Sniffing na Wi-Fi,🛑 Zablokowane,Ruch leci w tunelu WireGuard.
+DNS Spoofing,🛑 Zablokowane,MagicDNS weryfikuje tożsamość węzłów.
+SSL Stripping,🛑 Zablokowane,Wymuszasz HTTPS + HSTS (przeglądarka nie pozwoli na HTTP).
+Skanowanie Portów,🛑 Zablokowane,Brak publicznego IP / otwartych portów na WAN.
