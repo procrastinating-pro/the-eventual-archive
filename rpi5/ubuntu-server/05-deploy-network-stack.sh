@@ -105,6 +105,8 @@ services:
       - ROCKET_PORT=8081      # Port wewnętrzny
       - SIGNUPS_ALLOWED=true  # ZMIEŃ NA FALSE PO ZAŁOŻENIU KONTA!
       - WEBSOCKET_ENABLED=true
+      # Opcjonalnie: Jeśli znasz swoją domenę Tailscale, możesz ją tu wpisać:
+      # - DOMAIN=https://nodeone.twoja-domena.ts.net
 
   # --- WATCHTOWER (Aktualizacje) ---
   watchtower:
