@@ -102,7 +102,7 @@ select_destination() {
 perform_backup() {
     select_destination
     
-    local items=("Obsidian" "Scripts" ".bash_aliases" ".backup_list" ".vimrc")
+    local items=("Obsidian" "Scripts" ".bashrc" ".bash_aliases" ".backup_list" ".vimrc")
     if [[ -s "$LIST_FILE" ]]; then
         while IFS= read -r line || [[ -n "$line" ]]; do
             [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
