@@ -1,7 +1,1 @@
-[SYSTEM MESSAGE]
-
-Attempting to upload 'Motivation.exe'...
-
-[#####---------------] 21%
-
-Warning: 'Motivation.exe' has been moved to the Trash by user 'procrastinating-pro'.
+<img src="image.png" width="100%" alt="bro...">
